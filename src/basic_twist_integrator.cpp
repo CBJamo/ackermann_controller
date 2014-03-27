@@ -7,7 +7,10 @@ namespace basic_twist_integrator
 basic_twist_integrator::basic_twist_integrator( const ros::NodeHandle &_nh, const ros::NodeHandle &_nh_priv ) :
 	nh( _nh ),
 	nh_priv( _nh_priv ),
-	odom_callback( boost::bind(&basic_twist_integrator::odom_cb, this) )
+	odom_callback( boost::bind(&basic_twist_integrator::odom_cb, this) ),
+	x( 0.0 ),
+	y( 0.0 ),
+	th( 0.0 )
 {
 	nh_priv.param( "pub_transform", pub_transform, false );
 	nh_priv.param<std::string>( "frame_id", frame_id, "encoder_odom" );
