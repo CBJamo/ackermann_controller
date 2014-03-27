@@ -45,7 +45,7 @@ void basic_twist_integrator::odom_cb( )
 {
 	if( odom_pub.getNumSubscribers( ) > 0 || pub_transform )
 	{
-		if( !twist_stamped_sub && !( twist_stamped_sub = nh.subscribe( "twist", 1, &basic_twist_integrator::twist_stamped_cb, this ) ) )
+		if( !twist_stamped_sub && !( twist_stamped_sub = nh.subscribe( "robot_twist", 1, &basic_twist_integrator::twist_stamped_cb, this ) ) )
 			ROS_ERROR( "Failed to start joint state subscription" );
 	}
 	else if( twist_stamped_sub )
