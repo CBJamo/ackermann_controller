@@ -9,6 +9,8 @@ basic_twist_integrator::basic_twist_integrator( const ros::NodeHandle &_nh, cons
 	nh_priv( _nh_priv ),
 	odom_callback( boost::bind(&basic_twist_integrator::odom_cb, this) )
 {
+	nh_priv.param( "pub_transform", pub_transform, false );
+	nh_priv.param<std::string>( "frame_id", frame_id, "encoder_odom" );
 }
 
 basic_twist_integrator::~basic_twist_integrator( )
@@ -41,7 +43,7 @@ bool basic_twist_integrator::stat( )
 
 void basic_twist_integrator::odom_cb( )
 {
-	if( odom_pub.getNumSubscribers( ) > 0 )
+	if( odom_pub.getNumSubscribers( ) > 0 || pub_transform )
 	{
 		if( !twist_stamped_sub && !( twist_stamped_sub = nh.subscribe( "twist", 1, &basic_twist_integrator::twist_stamped_cb, this ) ) )
 			ROS_ERROR( "Failed to start joint state subscription" );
@@ -57,8 +59,8 @@ void basic_twist_integrator::twist_stamped_cb( const geometry_msgs::TwistStamped
 
 	nav_msgs::Odometry odom;
 	odom.header = msg->header;
-	odom.header.frame_id = "odom";
-	odom.child_frame_id = "base_footprint";
+	odom.header.frame_id = frame_id;
+	odom.child_frame_id = msg->header.frame_id;
 
 	//compute odometry in a typical way given the velocities of the two wheels
 	dt = (odom.header.stamp - last_time).toSec();
@@ -95,6 +97,22 @@ void basic_twist_integrator::twist_stamped_cb( const geometry_msgs::TwistStamped
 
 	//publish the message
 	odom_pub.publish(odom);
+
+	if( pub_transform )
+	{
+		geometry_msgs::TransformStamped odom_trans;
+		odom_trans.header = msg->header;
+		odom_trans.header.frame_id = frame_id;
+		odom_trans.child_frame_id = msg->header.frame_id;
+
+		odom_trans.transform.translation.x = odom.pose.pose.position.x;
+		odom_trans.transform.translation.y = odom.pose.pose.position.y;
+		odom_trans.transform.translation.z = 0.0;
+		odom_trans.transform.rotation = odom.pose.pose.orientation;
+
+		//send the transform
+		odom_broadcaster.sendTransform(odom_trans);
+	}
 
 	last_time = odom.header.stamp;
 }

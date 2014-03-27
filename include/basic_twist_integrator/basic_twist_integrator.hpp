@@ -4,6 +4,7 @@
 #include <ros/ros.h>
 #include <geometry_msgs/TwistStamped.h>
 #include <tf/transform_datatypes.h>
+#include <tf/transform_broadcaster.h>
 #include <nav_msgs/Odometry.h>
 
 namespace basic_twist_integrator
@@ -25,9 +26,14 @@ private:
 	ros::Publisher odom_pub;
 	const ros::SubscriberStatusCallback odom_callback;
 
+	tf::TransformBroadcaster odom_broadcaster;
+
 	double x;
 	double y;
 	double th;
+
+	bool pub_transform;
+	std::string frame_id;
 
 	void odom_cb( );
 	void twist_stamped_cb( const geometry_msgs::TwistStampedPtr &msg );

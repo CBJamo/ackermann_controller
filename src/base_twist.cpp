@@ -11,6 +11,7 @@ base_twist::base_twist( const ros::NodeHandle &_nh, const ros::NodeHandle &_nh_p
 {
 	nh_priv.param( "wheel_base", wheel_base, 0.2635 );
 	nh_priv.param( "wheel_diam", wheel_diam, 0.0750 );
+	nh_priv.param<std::string>( "frame_id", frame_id, "base_link" );
 	nh_priv.param<std::string>( "left_wheel_joint", left_joint_name, "left_wheel_joint" );
         nh_priv.param<std::string>( "right_wheel_joint", right_joint_name, "right_wheel_joint" );
 }
@@ -21,7 +22,7 @@ base_twist::~base_twist( )
 
 bool base_twist::start( )
 {
-	if( !( twist_stamped_pub = nh.advertise<geometry_msgs::TwistStamped>( "twist", 1, twist_stamped_callback, twist_stamped_callback, ros::VoidConstPtr( ), false ) ) )
+	if( !( twist_stamped_pub = nh.advertise<geometry_msgs::TwistStamped>( "robot_twist", 1, twist_stamped_callback, twist_stamped_callback, ros::VoidConstPtr( ), false ) ) )
 		return false;
 
 	twist_stamped_cb( );
@@ -82,11 +83,11 @@ void base_twist::joint_state_cb( const sensor_msgs::JointStatePtr &msg )
 
 	geometry_msgs::TwistStamped twist_stamped;
 	twist_stamped.header = msg->header;
-	twist_stamped.header.frame_id = "base_link";
+	twist_stamped.header.frame_id = frame_id;
 
 	//generate twist/
-	twist_stamped.twist.linear.x = ( ( rad_right + rad_left ) * wheel_diam ) / 2.0 ;
-	twist_stamped.twist.angular.z = ( rad_right - rad_left ) / wheel_base;
+	twist_stamped.twist.linear.x = ( rad_right + rad_left ) * ( wheel_diam  / 4.0 );
+	twist_stamped.twist.angular.z = ( rad_right - rad_left ) * ( wheel_diam / ( 2.0 * wheel_base ) );
 
 	//publish the message
 	twist_stamped_pub.publish(twist_stamped);
