@@ -29,6 +29,7 @@ private:
 	std::string right_joint_name;
 	double wheel_base;
 	double wheel_diam;
+	double wheel_diam2;
 
 	trajectory_msgs::JointTrajectory joint_traj_template;
 

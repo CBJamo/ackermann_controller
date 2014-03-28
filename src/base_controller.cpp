@@ -11,6 +11,7 @@ base_controller::base_controller( const ros::NodeHandle &_nh, const ros::NodeHan
 {
 	nh_priv.param( "wheel_base", wheel_base, 0.2635 );
 	nh_priv.param( "wheel_diam", wheel_diam, 0.0750 );
+	nh_priv.param( "wheel_diam2", wheel_diam2, wheel_diam );
 	nh_priv.param<std::string>( "left_wheel_joint", left_joint_name, "left_wheel_joint" );
         nh_priv.param<std::string>( "right_wheel_joint", right_joint_name, "right_wheel_joint" );
 
@@ -18,8 +19,8 @@ base_controller::base_controller( const ros::NodeHandle &_nh, const ros::NodeHan
 	joint_traj_template.joint_names.resize( 2 );
 	joint_traj_template.points.resize( 1 );
 	joint_traj_template.points[0].velocities.resize( 2 );
-	joint_traj_template.joint_names[0] = left_joint_name;
-	joint_traj_template.joint_names[1] = right_joint_name;
+	joint_traj_template.joint_names[0] = right_joint_name;
+	joint_traj_template.joint_names[1] = left_joint_name;
 }
 
 base_controller::~base_controller( )
@@ -68,7 +69,7 @@ void base_controller::twist_cb( const geometry_msgs::TwistPtr &msg )
 	new_msg->header.stamp = ros::Time::now( );
 
 	new_msg->points[0].velocities[0] = ( 2 * msg->linear.x - msg->angular.z * wheel_base ) / wheel_diam;
-	new_msg->points[0].velocities[1] = ( 2 * msg->linear.x + msg->angular.z * wheel_base ) / wheel_diam;
+	new_msg->points[0].velocities[1] = ( 2 * msg->linear.x + msg->angular.z * wheel_base ) / wheel_diam2;
 
 	joint_traj_pub.publish( new_msg );
 }
